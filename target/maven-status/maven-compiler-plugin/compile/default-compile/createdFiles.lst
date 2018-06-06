@@ -1,0 +1,6 @@
+com\jd\controller\StudentController.class
+com\jd\service\impl\StudentServiceImpl.class
+com\jd\domain\Student.class
+com\jd\service\StudentService.class
+com\jd\dao\StudentMapper.class
+com\jd\test\StudentServiceImplTest.class

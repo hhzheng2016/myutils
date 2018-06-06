@@ -1,0 +1,36 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jd.dao.StudentMapper">
+
+    <!--<resultMap id="studentMap" type="com.jd.domain.Student">-->
+        <!--<id property="id" column="id"/>-->
+        <!--<result property="name" column="name"/>-->
+        <!--<result property="birthday" javaType="Date" column="birthday" jdbcType="Date"/>-->
+        <!--<result property="major" column="major"/>-->
+    <!--</resultMap>-->
+
+    <!--目的:为dao接口方法提供sql语句配置
+    即针对dao接口中的方法编写我们的sql语句-->
+    <select id="findStudentById" resultType="com.jd.domain.Student" parameterType="Integer">
+        select * from  student where id=#{id}
+    </select>
+
+    <select id="findAll" resultType="com.jd.domain.Student">
+        select * from student;
+    </select>
+
+    <update id="updateStudent"  parameterType="com.jd.domain.Student">
+        update student set name=#{name},birthday=#{birthday},major=#{major} where id=#{id}
+    </update>
+
+    <delete id="deleteStudentById" parameterType="Integer">
+        delete from student where id=#{id}
+    </delete>
+
+    <insert id="addStudent" parameterType="com.jd.domain.Student">
+        insert into student (name,birthday,major) values (#{name},#{birthday},#{major})
+    </insert>
+
+</mapper>
