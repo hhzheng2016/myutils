@@ -20,6 +20,7 @@
 
     <!--视图解析器 显示ViewResolver-->
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--将视图解析为JstlView，如果jsp页面使用jstl处理格式化信心-->
         <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
         <property name="prefix" value="/WEB-INF/jsps/"/>
         <property name="suffix" value=".jsp"/>
@@ -34,6 +35,10 @@
                 <bean class="com.jd.controller.converter.StrToDateConverter"/>
             </set>
         </property>
+    </bean>
+
+    <bean id="multipart" class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
+        <property name="resolveLazily" value="true"/>
     </bean>
 
 </beans>

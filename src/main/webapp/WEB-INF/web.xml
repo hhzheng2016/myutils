@@ -24,6 +24,7 @@
 
 
     <!--前端控制器-->
+    <!--注册DispatcherServlet-->
     <servlet>
         <servlet-name>student-dispacher</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -33,6 +34,9 @@
             <param-name>contextConfigLocation</param-name>
             <param-value>classpath:spring/spring-*.xml</param-value>
         </init-param>
+
+        <load-on-startup>1</load-on-startup>
+
     </servlet>
 
     <!--匹配请求-->

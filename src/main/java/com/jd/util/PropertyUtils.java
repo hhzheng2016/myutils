@@ -1,14 +1,13 @@
 package com.jd.util;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Locale;
+
 
 public class PropertyUtils {
 
     /**
      * 获取实例对象对应属性名的值
+     *
      * @param t         对象实例
      * @param fieldName 属性名
      * @param <T>
@@ -30,4 +29,23 @@ public class PropertyUtils {
         }
         return result;
     }
+
+
+    /*public static <T> void setProperty(T t, String fieldName, String s) {
+        Field field = null;
+        try {
+            field = t.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            Class c=field.getType();
+
+            field.set(fieldName, s);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }catch (IllegalAccessException e){
+            e.printStackTrace();
+        }
+    }*/
+
+
+
 }

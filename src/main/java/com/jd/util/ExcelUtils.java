@@ -1,20 +1,24 @@
 package com.jd.util;
 
-import jxl.SheetSettings;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
+import jxl.*;
 import jxl.format.Alignment;
 import jxl.format.VerticalAlignment;
+import jxl.read.biff.BiffException;
 import jxl.write.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
+import org.apache.commons.beanutils.BeanUtils;
 
 /**
  * excel导出工具，基于jxl 2.6
@@ -25,11 +29,17 @@ public class ExcelUtils {
     private ExcelUtils() {
     }
 
+    private static final Logger logger = LogManager.getLogger(ExcelUtils.class);
+
+
     private static String DEFAULT_FILE_NAME = "导出文件";
     private static String DEFAULT_SHEET_NAME = "sheet1";
 
+    private static Integer SUCCESS = Integer.valueOf(1);
+    private static Integer FAILED = Integer.valueOf(0);
+
     /**
-     * 对外暴露的接口
+     * 对外暴露的接口 导出excel
      *
      * @param request
      * @param response
@@ -66,6 +76,92 @@ public class ExcelUtils {
         }
     }
 
+    /**
+     * 读取excel数据  每一行数据对应一个map
+     *
+     * @param is
+     * @param fieldNames 与excel中列名一一对应的bean属性名，包括顺序
+     * @return
+     */
+    public static List<Map<String, String>> getDataFromExcel(InputStream is, String[] fieldNames) {
+        if (is == null)
+            return Collections.emptyList();
+
+
+        if (fieldNames == null || fieldNames.length <= 0)
+            throw new IllegalArgumentException("必须给出属性名");
+
+        Workbook workbook = null;
+
+        try {
+            //从输入流获得excel对象
+            workbook = Workbook.getWorkbook(is);
+            logger.debug(workbook);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (BiffException e) {
+            e.printStackTrace();
+        }
+
+        if (workbook == null)
+            return Collections.emptyList();
+
+        //获取工作表及数据行数
+        Sheet sheet0 = workbook.getSheet(0);
+        int rows = sheet0.getRows();
+        List<Map<String, String>> mapList = new ArrayList<Map<String, String>>(rows - 1);
+        //读取数据
+        for (int i = 1; i < rows; i++) {
+            Map<String, String> map = new HashMap<String, String>(fieldNames.length);
+            for (int j = 0; j < fieldNames.length; j++) {
+                Cell cell = sheet0.getCell(j, i);
+                map.put(fieldNames[j], cell.getContents());
+            }
+            mapList.add(map);
+        }
+        return mapList;
+    }
+
+
+    public static <T> List<T> assembleBeans(List<Map<String, String>> mapList, Class<T> tClass, String[] fieldNames, CheckData checkData) {
+        if (mapList == null || mapList.isEmpty() || tClass == null || checkData == null)
+            return Collections.emptyList();
+
+        List<T> beanList = new ArrayList<T>(mapList.size());
+        for (Map<String, String> data : mapList) {
+            //校验返回true，表示数据无异常
+            if (!checkData.check(data)) {
+                continue;
+            }
+
+            T entity = null;
+
+            try {
+                entity = tClass.newInstance();
+                BeanUtils.populate(entity, data);
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+
+    /*        for (String fieldName : fieldNames) {
+                try {
+                    //转换日期类型怎么办
+                    BeanUtils.setProperty(entity, fieldName, data.get(fieldName));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+
+            }*/
+            beanList.add(entity);
+        }
+        return beanList;
+    }
 
     /**
      * 生成excel的方法
@@ -159,8 +255,9 @@ public class ExcelUtils {
 
     /**
      * 填充每个单元格内容
-     * @param sheet 当前的表
-     * @param list  待填充的数据
+     *
+     * @param sheet      当前的表
+     * @param list       待填充的数据
      * @param fieldNames 相应的bean属性名（和列名一一对应）
      * @param <T>
      */
@@ -192,6 +289,7 @@ public class ExcelUtils {
     /**
      * 使用response向前台输出excel,设置相应的响应头
      * 自动出现下载
+     *
      * @param response
      * @param name
      */
